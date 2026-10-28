@@ -1,0 +1,123 @@
+/* 珠间 — 木头珠算盘，零依赖的静态网页 */
+:root {
+  --ink:#30291f;
+  --muted:#726554;
+  --paper:#f2eadc;
+  --line:#d9c9af;
+  --walnut:#75472d;
+  --green:#4c6750;
+  --green-dark:#34503c;
+  --white:#fffaf0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);background:var(--paper);font-family:"Noto Sans SC","PingFang SC","Microsoft Yahei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #879d6d;outline-offset:3px}
+button:disabled{opacity:.36;cursor:not-allowed}
+[hidden]{display:none!important}
+.paper-grain{position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.27;background-image:radial-gradient(#8a6f4b 0.45px, transparent 0.7px),linear-gradient(112deg,#fffcf3 0%,transparent 45%,#e5d3b6 100%);background-size:8px 8px,100% 100%}
+.layout{max-width:1080px;margin:auto;padding:22px clamp(18px,4.5vw,48px) 24px}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:4px 0 25px;border-bottom:1px solid #d8cbb8}
+.brand{display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none}
+.brand-seal{width:44px;height:44px;border-radius:13px 13px 12px 12px;background:var(--green);display:grid;place-items:center;color:#fff6e7;font:26px "Songti SC","Noto Serif SC",serif;box-shadow:inset 0 -3px 0 #243e2c,2px 3px 0 #d9d0ba}
+.brand strong{font:700 21px "Songti SC","Noto Serif SC",serif;letter-spacing:.14em}
+.brand small{display:block;margin-top:3px;font-size:10px;color:var(--muted);letter-spacing:.2em}
+.soft-button,.action-button{border:1px solid #cfc0a7;background:#f9f2e6;color:#514938;border-radius:12px;padding:11px 16px;transition:background .2s,border-color .2s,transform .15s;min-height:44px}
+.soft-button:hover,.action-button:hover:not(:disabled){background:#fffaf1;border-color:#a99b80}
+.soft-button:active,.action-button:active:not(:disabled){transform:translateY(1px)}
+.intro{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:31px 6px 27px}
+.eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:var(--green);letter-spacing:.17em;font-size:12px;font-weight:650}
+.ink-dot{width:6px;height:6px;border-radius:50%;background:#6a8065}
+h1,h2,p{margin-top:0}
+h1,h2{font-family:"Songti SC","Noto Serif SC","STSong",serif}
+h1{font-weight:600;letter-spacing:.05em;font-size:clamp(30px,5.2vw,53px);line-height:1.3;margin:0}
+h1 em{color:var(--green);font-style:normal}
+.intro-copy{font-size:14px;color:var(--muted);line-height:1.9;margin:12px 0 0}
+.intro-stamp{width:74px;height:87px;border:2px solid #baaa91;border-radius:43% 45% 48% 39%;flex-shrink:0;display:grid;place-items:center;font:20px/1.2 "Songti SC",serif;letter-spacing:.11em;color:#8c846b;transform:rotate(10deg);opacity:.7}
+.practice-room{background:rgba(255,252,245,.78);border:1px solid #ddceb6;border-radius:23px;box-shadow:0 18px 48px rgba(84,62,37,.08);overflow:hidden}
+.board-top{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:16px 20px 5px}
+.mode-tabs{display:flex;gap:4px;padding:4px;border-radius:13px;background:#e9e0d0}
+.mode-tab{border:0;border-radius:10px;background:transparent;padding:10px 16px;min-height:42px;color:#726553;font-size:13px;font-weight:600}
+.mode-tab.is-active{background:#fff9ee;color:#3e4e38;box-shadow:0 2px 8px rgba(62,42,24,.08)}
+.tab-sparkle{font-size:11px;margin-left:2px;color:#8d7854}
+.board-caption{font-size:12px;color:#8c7e67;white-space:nowrap}
+.abacus-frame{margin:5px 18px 0;border-radius:18px;background:linear-gradient(120deg,#eee0cb,#f8edda 50%,#ece0cd);padding:18px 16px 12px;box-shadow:inset 0 0 0 1px #d4c0a3}
+.board-ornament{font:12px serif;letter-spacing:.85em;color:#bba98e;text-align:center;margin-bottom:-6px;opacity:.66}
+#abacus{display:block;width:100%;max-width:710px;margin:auto;overflow:visible;user-select:none;-webkit-user-select:none}
+#abacus .bead{cursor:grab;touch-action:none;transition:transform .15s cubic-bezier(.18,.9,.2,1);outline:none}
+#abacus .bead:active{cursor:grabbing}
+#abacus .bead:focus-visible ellipse.main-bead{stroke:#d6e9b3;stroke-width:4}
+#abacus .bead .hit-area{fill:transparent}
+.board-help{text-align:center;font-size:12px;letter-spacing:.08em;color:#816d55;padding:0 0 5px}
+.board-footer{padding:16px 23px 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
+.value-panel{display:flex;align-items:end;gap:26px;min-width:0}
+.mini-heading{font-size:11px;color:#857760;letter-spacing:.1em;font-weight:600;margin:0 0 4px}
+.current-number{font-family:Georgia,"Times New Roman",serif;font-size:clamp(35px,5vw,56px);line-height:1.1;font-weight:500;letter-spacing:.035em;color:#3d543c;font-variant-numeric:tabular-nums;white-space:nowrap}
+.place-readout{display:flex;gap:8px;margin-bottom:4px}
+.place-tile{text-align:center;min-width:24px}
+.place-tile small{display:block;font-size:10px;color:#a09481}
+.place-tile strong{display:block;font-family:Georgia,serif;font-size:14px;font-weight:500;color:#8c806b}
+.board-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.board-actions .action-button{font-size:12px;padding:10px 12px}
+.lesson-panel{margin-top:19px;padding:26px clamp(20px,4vw,34px) 27px;background:#fff9ed;border:1px solid #dfceb4;border-radius:20px;box-shadow:0 5px 20px rgba(84,62,37,.035)}
+.panel-topline{display:flex;gap:11px;align-items:center;font-size:11px;color:#8b785c;letter-spacing:.1em;margin-bottom:19px}
+.tiny-seal{background:#a07b57;color:#fff9e8;border-radius:4px;padding:3px 7px;font-weight:700}
+.free-grid{display:grid;grid-template-columns:1.25fr .9fr;gap:32px}
+.lesson-panel h2{font-size:clamp(22px,3vw,28px);font-weight:600;margin-bottom:14px;letter-spacing:.05em}
+.lesson-panel p{font-size:13px;line-height:1.9;color:#726650;margin-bottom:8px}
+.lesson-panel strong{color:#3b4636}
+.tip-card{background:#f1e7d5;border:1px solid #e3d5bd;border-radius:16px;padding:19px 20px 18px}
+.tip-index{color:#6e805f;font-size:11px;font-weight:700;letter-spacing:.08em}
+.tip-big{font:25px Georgia,serif;color:#455e44;margin:10px 0}
+.text-link{padding:0;background:none;border:0;color:#42624a;font-size:13px;text-decoration:underline;text-decoration-color:#9db09c;text-underline-offset:5px;margin-top:11px}
+.practice-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:17px}
+.practice-heading h2{font-family:Georgia,"Noto Serif SC",serif;font-size:clamp(27px,4vw,40px);margin:4px 0 10px;font-weight:500;letter-spacing:.03em}
+.difficulty-switch{display:flex;flex-wrap:wrap;gap:4px;background:#efe5d3;padding:4px;border-radius:10px}
+.difficulty-switch button{background:transparent;border:0;border-radius:8px;padding:9px 11px;min-height:37px;font-size:12px;color:#776850;white-space:nowrap}
+.difficulty-switch button.is-active{background:#fffaf1;color:#405b43;box-shadow:0 2px 7px rgba(64,40,17,.06);font-weight:700}
+.question-guide{margin:0}
+.hint-text{margin:13px 0;padding:12px 15px;color:#546947;background:#eef2e7;border-left:3px solid #90a380;font-size:13px;line-height:1.8;border-radius:0 8px 8px 0}
+.feedback{min-height:26px;margin:12px 0 15px!important}
+.feedback.is-success{color:#367044;font-weight:700}
+.feedback.is-try{color:#9b6537}
+.practice-actions{display:flex;flex-wrap:wrap;gap:9px}
+.primary-button{border:1px solid #3e5b43;border-radius:11px;background:#47644b;color:#fcf7e9;padding:12px 22px;min-height:44px;font-size:13px;font-weight:700;display:flex;gap:25px;align-items:center;justify-content:space-between}
+.primary-button:hover{background:#355139}
+.primary-button span{font-size:18px}
+.practice-actions .action-button{font-size:13px}
+.footer{display:flex;justify-content:space-between;gap:16px;padding:21px 5px 5px;color:#a1927b;font-size:11px;letter-spacing:.05em}
+@media(max-width:650px){
+  .layout{padding:15px 12px 25px}
+  .masthead{padding:3px 5px 17px}
+  .brand-seal{width:38px;height:38px;font-size:23px}
+  .brand strong{font-size:19px}
+  .intro{padding:26px 7px 22px}
+  .intro-stamp{width:57px;height:72px;font-size:16px}
+  .intro-copy{font-size:12px;max-width:285px}
+  .practice-room{border-radius:16px}
+  .board-top{padding:12px 11px 2px;align-items:flex-start}
+  .mode-tabs{width:100%}
+  .mode-tab{flex:1;padding:8px 5px;font-size:12px;min-height:40px}
+  .board-caption{display:none}
+  .abacus-frame{margin:10px 8px 0;padding:5px 0 10px;border-radius:11px}
+  .board-ornament{margin-bottom:-12px;font-size:10px}
+  .board-help{font-size:10px;letter-spacing:0;margin-top:-6px}
+  .board-footer{padding:12px 13px 17px;align-items:center}
+  .value-panel{gap:12px}
+  .current-number{font-size:37px}
+  .place-readout{display:none}
+  .board-actions .action-button{min-height:41px;padding:9px 10px;font-size:11px}
+  .lesson-panel{border-radius:15px;margin-top:13px;padding:18px 17px 21px}
+  .free-grid{grid-template-columns:1fr;gap:17px}
+  .practice-heading{display:block}
+  .practice-heading h2{margin-bottom:17px}
+  .difficulty-switch{display:inline-flex;max-width:100%}
+  .difficulty-switch button{padding:8px 10px}
+  .practice-actions{display:grid;grid-template-columns:1fr 1fr}
+  .practice-actions .primary-button{grid-column:1/-1}
+  .footer{padding-left:5px;padding-right:5px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
