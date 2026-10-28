@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#efe5d3">
+  <meta name="description" content="木头珠算盘：亲手拨珠、练习进位借位，不用先心算答案。">
+  <title>珠间 · 木算盘练习室</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="paper-grain" aria-hidden="true"></div>
+  <div class="layout">
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="珠间首页">
+        <span class="brand-seal">珠</span>
+        <span><strong>珠间</strong><small>木算盘练习室</small></span>
+      </a>
+      <button id="soundButton" class="soft-button" type="button" aria-pressed="false">♪ 声音：关</button>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow"><span class="ink-dot"></span> 一拨一念 · 手中有数</p>
+          <h1 id="page-title">把数字，<em>拨出来。</em></h1>
+          <p class="intro-copy">不用提前算出答案。让珠子一步一步替你想，慢慢拨，也算数。</p>
+        </div>
+        <div class="intro-stamp" aria-hidden="true">算<br>有<br>数</div>
+      </section>
+
+      <section class="practice-room" aria-label="互动木算盘">
+        <div class="board-top">
+          <div class="mode-tabs" role="group" aria-label="练习模式">
+            <button type="button" class="mode-tab is-active" data-mode="free" aria-pressed="true">自由拨珠</button>
+            <button type="button" class="mode-tab" data-mode="practice" aria-pressed="false">跟我练习 <span class="tab-sparkle">✦</span></button>
+          </div>
+          <span class="board-caption">上珠为五 · 下珠为一</span>
+        </div>
+
+        <div class="abacus-frame">
+          <div class="board-ornament" aria-hidden="true"><span>壹</span><span>贰</span><span>叁</span></div>
+          <svg id="abacus" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 410"
+               aria-label="五档互动算盘，从左到右为万、千、百、十、个位。点击或拖动珠子拨算。">
+          </svg>
+          <div class="board-help">轻点珠子，或向横梁拖动 · 靠梁计数</div>
+        </div>
+
+        <div class="board-footer">
+          <div class="value-panel">
+            <div>
+              <span class="mini-heading">当前盘面</span>
+              <div class="current-number" id="currentNumber" aria-live="polite">0</div>
+            </div>
+            <div class="place-readout" id="placeReadout" aria-label="各档数字"></div>
+          </div>
+          <div class="board-actions">
+            <button id="undoButton" class="action-button" type="button" disabled>↶ 撤销一步</button>
+            <button id="resetButton" class="action-button" type="button">清盘</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="lesson-panel" id="freePanel" aria-label="使用说明">
+        <div class="panel-topline"><span class="tiny-seal">入门</span><span>从一颗珠子开始</span></div>
+        <div class="free-grid">
+          <div>
+            <h2>先别急着算。</h2>
+            <p>每档上面的一颗珠子代表 <strong>5</strong>，下面四颗每颗代表 <strong>1</strong>。只有靠近横梁的珠子才计数。</p>
+            <p>从右往左是个、十、百、千、万。哪一档是零，那档就没有珠子靠梁。</p>
+          </div>
+          <div class="tip-card">
+            <span class="tip-index">拨珠小诀窍</span>
+            <div class="tip-big">+7 = +10 − 3</div>
+            <p>比如 196＋7：先给十位加1（满十就继续向左进位），再从个位去掉3。</p>
+            <button class="text-link" id="exampleButton" type="button">把 196 摆上算盘 <span>↗</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="lesson-panel" id="practicePanel" aria-label="算题练习" hidden>
+        <div class="panel-topline"><span class="tiny-seal">练习</span><span>只告诉你题目，不偷看答案</span></div>
+        <div class="practice-heading">
+          <div><p class="mini-heading">这一题</p><h2 id="questionText">48 ＋ 7 ＝ ？</h2></div>
+          <div class="difficulty-switch" role="group" aria-label="选择练习难度">
+            <button type="button" data-level="beginner">入门</button>
+            <button type="button" class="is-active" data-level="carry">进退位</button>
+            <button type="button" data-level="chain">连环</button>
+          </div>
+        </div>
+        <p class="question-guide" id="questionGuide">起始数字已替你摆好。接下来自己拨珠，不用清零重摆。</p>
+        <div id="hintText" class="hint-text" hidden></div>
+        <p id="feedback" class="feedback" aria-live="polite">拨好后点「检查算盘」，我只检查你拨出来的数。</p>
+        <div class="practice-actions">
+          <button type="button" id="checkButton" class="primary-button">检查算盘 <span>→</span></button>
+          <button type="button" id="hintButton" class="action-button">给一点提示</button>
+          <button type="button" id="newProblemButton" class="action-button">换一题 ↻</button>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>珠间 · 木头版</span>
+        <span>纯网页 · 无需登录 · 没有广告</span>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
