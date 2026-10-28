@@ -293,9 +293,12 @@
       const low=Math.pow(10,width-1);
       const high=Math.pow(10,width)-1;
       const a=randInt(low,high);
-      const b=randInt(Math.max(11,Math.floor(low*.15)),Math.min(high,Math.floor(high*.85)));
+      // 中高阶的两个操作数都保持在选定数位，不混入两位数题。
+      // 加法同时保证答案仍落在五档算盘的范围内。
+      const highestB=op==="+" ? Math.min(high,MAX-a) : Math.min(high,a-1);
+      if(highestB<low) continue;
+      const b=randInt(low,highestB);
       const answer=op==="+"?a+b:a-b;
-      if(answer<0||answer>MAX) continue;
       if(op==="+" && carries(a,b)<(isBig?2:1)) continue;
       if(op==="-" && borrows(a,b)<(isBig?2:1)) continue;
       return {
