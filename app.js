@@ -536,7 +536,14 @@
     feedbackEl.textContent = message;
   }
   function newProblem() {
-    const list = exercises[level];
+    const list = exercises[level].filter(function(item) {
+      if(level==="beginner") return true;
+      const amin=level==="carry"?100:1000;
+      const amax=level==="carry"?999:99999;
+      return item.a>=amin && item.a<=amax && item.b>=amin && item.b<=amax
+        && item.a+(item.op==="+"?item.b:-item.b)>=0
+        && item.a+(item.op==="+"?item.b:-item.b)<=MAX;
+    });
     const options = list.filter(function (item) { return item.a + item.op + item.b !== previousProblem; });
     let choice = null;
     // 中高阶多数题目实时生成，避免反复出现固定的两位数题。
