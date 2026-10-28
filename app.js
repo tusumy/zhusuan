@@ -21,7 +21,7 @@
   let state = emptyState();
   let history = [];
   let mode = "free";
-  let level = "carry";
+  let level = "chain";
   let currentProblem = null;
   let previousProblem = "";
   let hintIndex = -1;
@@ -32,31 +32,281 @@
   const beads = [];
 
   const exercises = {
-    beginner: [
-      { a: 23, op: "+", b: 4, hints: ["只看个位：3加4，可以用加5减1。", "上珠拨下来，再去掉一颗下珠。"] },
-      { a: 40, op: "+", b: 3, hints: ["这一题不用进位。", "只在个位靠梁拨三颗下珠。"] },
-      { a: 58, op: "+", b: 1, hints: ["个位的8离9只差1。", "个位再拨上一颗下珠就行。"] },
-      { a: 75, op: "-", b: 3, hints: ["个位只有上珠5，不能直接去三颗下珠。", "减3可以先去5，再还2。"] },
-      { a: 24, op: "+", b: 3, hints: ["个位4加3，需要先凑5。", "加3等于加5再去2。"] }
-    ],
-    carry: [
-      { a: 48, op: "+", b: 7, hints: ["7可以拆成10减3。", "十位加1，个位从8里去掉三颗下珠。"] },
-      { a: 56, op: "+", b: 8, hints: ["8等于10减2。", "十位进一；个位6减2，需要破五。"] },
-      { a: 73, op: "-", b: 6, hints: ["减6可以退十再还4。", "十位退一；个位3加4，可以下五去一。"] },
-      { a: 64, op: "-", b: 8, hints: ["减8等于减10再补2。", "十位减1；个位4加2，要下五去三。"] },
-      { a: 53, op: "-", b: 8, hints: ["先退十，再还2。", "十位5退成4：上珠离梁，四颗下珠靠梁。"] },
-      { a: 62, op: "-", b: 7, hints: ["减7等于退十还3。", "十位退一；个位2加3，正好凑五。"] }
-    ],
-    chain: [
-      { a: 196, op: "+", b: 7, hints: ["加7可以先加10，再减3。", "十位9再加1会满十，继续向百位进1。"] },
-      { a: 503, op: "-", b: 8, hints: ["减8等于退十还2，但十位是0。", "从百位借1：百位减1，十位变9，个位再加2。"] },
-      { a: 602, op: "-", b: 5, hints: ["个位2不够减5，先退十还5。", "十位0需要从百位借：百位减1，十位变9。"] },
-      { a: 1002, op: "-", b: 5, hints: ["先减10，再把5还给个位。", "千位借出1之后，百位、十位都能借成9。"] },
-      { a: 999, op: "+", b: 1, hints: ["个位9加1满十，个位清零。", "十位和百位也都是9，会继续向左进位。"] },
-      { a: 10006, op: "+", b: 994, hints: ["994可以看成1000减6。", "千位加1，然后个位去6；小心哪一档需要退位。"] },
-      { a: 9999, op: "+", b: 1, hints: ["从个位开始，满十向左传递。", "只有遇到没满十的档位，进位才停。"] }
-    ]
+      "beginner": [
+          {
+              "a": 23,
+              "op": "+",
+              "b": 4,
+              "hints": [
+                  "先看个位：3加4，可以考虑凑五。",
+                  "只需改变个位的珠子。"
+              ]
+          },
+          {
+              "a": 58,
+              "op": "+",
+              "b": 7,
+              "hints": [
+                  "加7可以用进十去三。",
+                  "十位进1，个位把三颗下珠去掉。"
+              ]
+          },
+          {
+              "a": 73,
+              "op": "-",
+              "b": 6,
+              "hints": [
+                  "先退10再还4。",
+                  "个位3加4，可以下五去一。"
+              ]
+          },
+          {
+              "a": 64,
+              "op": "-",
+              "b": 8,
+              "hints": [
+                  "减8可先减10再补2。",
+                  "个位4加2，需要凑五。"
+              ]
+          },
+          {
+              "a": 48,
+              "op": "+",
+              "b": 7,
+              "hints": [
+                  "进十去三。",
+                  "十位进1，个位去三。"
+              ]
+          },
+          {
+              "a": 62,
+              "op": "-",
+              "b": 7,
+              "hints": [
+                  "退十还三。",
+                  "十位退1，个位2加3正好5。"
+              ]
+          }
+      ],
+      "carry": [
+          {
+              "a": 196,
+              "op": "+",
+              "b": 7,
+              "hints": [
+                  "个位6加7，可以先加10再去3。",
+                  "十位9再进1，还要继续向百位进1。"
+              ]
+          },
+          {
+              "a": 308,
+              "op": "+",
+              "b": 257,
+              "hints": [
+                  "按个位、十位、百位分开拨。",
+                  "个位8加7进位，别把进位漏掉。"
+              ]
+          },
+          {
+              "a": 476,
+              "op": "+",
+              "b": 368,
+              "hints": [
+                  "每一档都可能要进位。",
+                  "先处理个位的6加8，满十就向左进1。"
+              ]
+          },
+          {
+              "a": 702,
+              "op": "-",
+              "b": 468,
+              "hints": [
+                  "个位不够减，先往左借。",
+                  "十位是0，继续从百位借。"
+              ]
+          },
+          {
+              "a": 804,
+              "op": "-",
+              "b": 257,
+              "hints": [
+                  "先把个位的4减7处理好。",
+                  "遇到十位是0，就继续向百位借。"
+              ]
+          },
+          {
+              "a": 525,
+              "op": "+",
+              "b": 387,
+              "hints": [
+                  "个位先加7。",
+                  "后面几档进位时留意十位是否满十。"
+              ]
+          },
+          {
+              "a": 501,
+              "op": "-",
+              "b": 267,
+              "hints": [
+                  "个位1不够减7，需要退十。",
+                  "十位是0，需要从百位借。"
+              ]
+          },
+          {
+              "a": 623,
+              "op": "-",
+              "b": 458,
+              "hints": [
+                  "个位3不够减8。",
+                  "按位退借，不用先想出最终答案。"
+              ]
+          }
+      ],
+      "chain": [
+          {
+              "a": 1002,
+              "op": "-",
+              "b": 5,
+              "hints": [
+                  "个位2不够减5，需要退十。",
+                  "十位、百位都是0，继续从千位借。"
+              ]
+          },
+          {
+              "a": 9999,
+              "op": "+",
+              "b": 1,
+              "hints": [
+                  "个位满十就向左进1。",
+                  "一位位往左传，直到遇到没满十的档。"
+              ]
+          },
+          {
+              "a": 4096,
+              "op": "+",
+              "b": 8785,
+              "hints": [
+                  "从个位开始按档加。",
+                  "某档满十时向左进一，十位、百位也可能要接着进位。"
+              ]
+          },
+          {
+              "a": 20407,
+              "op": "-",
+              "b": 8769,
+              "hints": [
+                  "个位先尝试减9。",
+                  "不够借时可能遇到连续的0，要往左找到能借的档。"
+              ]
+          },
+          {
+              "a": 45678,
+              "op": "+",
+              "b": 12345,
+              "hints": [
+                  "先从个位加5开始。",
+                  "别急着计算结果，满十就进位。"
+              ]
+          },
+          {
+              "a": 50002,
+              "op": "-",
+              "b": 19765,
+              "hints": [
+                  "个位2减5不够。",
+                  "零档不能直接借时，从更高位接力。"
+              ]
+          },
+          {
+              "a": 80705,
+              "op": "-",
+              "b": 47986,
+              "hints": [
+                  "把减数按个位到万位拆开。",
+                  "同一档不够减就借位，遇到0继续向左。"
+              ]
+          },
+          {
+              "a": 9998,
+              "op": "+",
+              "b": 7,
+              "hints": [
+                  "个位加7会进十。",
+                  "十位和百位都是9，进位要连续传递。"
+              ]
+          },
+          {
+              "a": 10840,
+              "op": "+",
+              "b": 7899,
+              "hints": [
+                  "试着逐档拨入加数。",
+                  "个位0加9不进位，十位4加9却会进位。"
+              ]
+          },
+          {
+              "a": 99876,
+              "op": "-",
+              "b": 45678,
+              "hints": [
+                  "从个位的6减8开始。",
+                  "各档仔细检查借位，万位仍需保留。"
+              ]
+          }
+      ]
   };
+
+  function randInt(lo,hi) {
+    return Math.floor(Math.random() * (hi-lo+1)) + lo;
+  }
+
+  function carries(a,b) {
+    let count=0,carry=0;
+    for(let i=0;i<5;i++) {
+      let n=a%10+b%10+carry;
+      carry=n>=10?1:0;
+      count+=carry;
+      a=Math.floor(a/10);
+      b=Math.floor(b/10);
+    }
+    return count;
+  }
+
+  function borrows(a,b) {
+    let count=0,borrow=0;
+    for(let i=0;i<5;i++) {
+      const left=a%10-borrow;
+      const right=b%10;
+      borrow=left<right?1:0;
+      count+=borrow;
+      a=Math.floor(a/10);
+      b=Math.floor(b/10);
+    }
+    return count;
+  }
+
+  function generateProblem(selectedLevel) {
+    const isBig=selectedLevel==="chain";
+    for(let attempt=0;attempt<150;attempt++) {
+      const op=Math.random()<.5?"+":"-";
+      const width=isBig?randInt(4,5):3;
+      const low=Math.pow(10,width-1);
+      const high=Math.pow(10,width)-1;
+      const a=randInt(low,high);
+      const b=randInt(Math.max(11,Math.floor(low*.15)),Math.min(high,Math.floor(high*.85)));
+      const answer=op==="+"?a+b:a-b;
+      if(answer<0||answer>MAX) continue;
+      if(op==="+" && carries(a,b)<(isBig?2:1)) continue;
+      if(op==="-" && borrows(a,b)<(isBig?2:1)) continue;
+      return {
+        a:a,op:op,b:b,
+        hints:op==="+"
+          ? ["把加数按个位、十位、百位依次拨入，不要先计算总数。","一档凑到10，就清零并给左边一档进1。"]
+          : ["把减数按位分开，遇到某档不够减，就往左借1。","如果左边一档是0，就继续向更高位借；借完要记得把剩余的9留下。"]
+      };
+    }
+    return null;
+  }
 
   function emptyState() {
     return Array.from({ length: 5 }, function () { return { upper: false, lower: 0 }; });
@@ -285,7 +535,18 @@
   function newProblem() {
     const list = exercises[level];
     const options = list.filter(function (item) { return item.a + item.op + item.b !== previousProblem; });
-    const choice = options[Math.floor(Math.random() * options.length)] || list[0];
+    let choice = null;
+    // 中高阶多数题目实时生成，避免反复出现固定的两位数题。
+    if(level!=="beginner" && Math.random()<.8) {
+      for(let i=0;i<8;i++) {
+        const generated=generateProblem(level);
+        if(generated && generated.a+generated.op+generated.b!==previousProblem) {
+          choice=generated;
+          break;
+        }
+      }
+    }
+    if(!choice) choice=options[Math.floor(Math.random()*options.length)] || list[0];
     previousProblem = choice.a + choice.op + choice.b;
     currentProblem = choice;
     hintIndex = -1;
