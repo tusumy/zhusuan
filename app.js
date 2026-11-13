@@ -27,6 +27,18 @@
   let hintIndex = -1;
   let savedFreeState = null;
   let sound = false;
+  let lessonKind = "multiply";
+  let lessonProblem = null;
+  let lessonSteps = [];
+  let lessonIndex = 0;
+  let lessonDone = false;
+  let lessonHintLevel = 0;
+  const lessonProblemIndex = { multiply: 0, divide: 0 };
+  const lessonProblems = {
+    multiply: [{ a: 12, b: 3 }, { a: 23, b: 4 }, { a: 23, b: 14 }, { a: 37, b: 12 }],
+    divide: [{ a: 84, b: 3 }, { a: 96, b: 3 }, { a: 144, b: 4 }, { a: 248, b: 4 }]
+  };
+  const placeNames = ["个", "十", "百", "千", "万"];
   let audioCtx = null;
   let gesture = null;
   const beads = [];
@@ -256,6 +268,156 @@
       ]
   };
 
+
+  // 入门乘除：用原五档算盘练习“加部分积／减部分积”。
+  // 盘面只承载当前累计积或余数，不冒充需要独立商档的传统隔位商法。
+  function buildLessonSteps() {
+    const a = lessonProblem.a;
+    const b = lessonProblem.b;
+    const result = [];
+    if (lessonKind === "multiply") {
+      const digitsA = String(a).split("").reverse().map(Number);
+      const digitsB = String(b).split("").reverse().map(Number);
+      let subtotal = 0;
+      digitsB.forEach(function (db, j) {
+        digitsA.forEach(function (da, i) {
+          if (!da || !db) return;
+          const raw = da * db;
+          const shift = Math.pow(10, i + j);
+          const amount = raw * shift;
+          subtotal += amount;
+          result.push({
+            target: subtotal,
+            detail: da + " × " + db + " = " + raw + "，这是" + placeNames[i] + "位与" + placeNames[j] + "位相乘。",
+            instruction: "把这一项部分积 " + amount + " 加到当前盘面上。注意：积跨档时要进位。",
+            hint: "先算 " + raw + " × " + shift + " = " + amount + "，再照以前的加法拨珠。"
+          });
+        });
+      });
+    } else {
+      const quotient = a / b;
+      let remaining = a;
+      const maxPower = Math.floor(Math.log10(quotient));
+      for (let power = maxPower; power >= 0; power--) {
+        const place = Math.pow(10, power);
+        const digit = Math.floor(quotient / place) % 10;
+        if (!digit) continue;
+        const amount = b * digit * place;
+        const before = remaining;
+        remaining -= amount;
+        result.push({
+          target: remaining,
+          quotientPart: digit * place,
+          detail: "商的" + placeNames[power] + "位试 " + digit + "，因为 " + b + " × " + digit + " × " + place + " = " + amount + "。",
+          instruction: "从算盘上的 " + before + " 减去 " + amount + "，留下余数。商先记在旁边。",
+          hint: "这一步是 " + before + " − " + amount + "，按以前的借位减法拨。"
+        });
+      }
+    }
+    return result;
+  }
+
+  function lessonFeedback(message, type) {
+    const el = doc.getElementById("lessonFeedback");
+    el.className = "feedback" + (type ? " is-" + type : "");
+    el.textContent = message;
+  }
+
+  function showLessonStep() {
+    const progress = doc.getElementById("lessonProgress");
+    const detail = doc.getElementById("lessonStepDetail");
+    const instruction = doc.getElementById("lessonStepInstruction");
+    const status = doc.getElementById("lessonStatus");
+    const check = doc.getElementById("lessonCheckButton");
+    const hint = doc.getElementById("lessonHintButton");
+    doc.getElementById("lessonHint").hidden = true;
+    if (lessonDone) {
+      const result = lessonKind === "multiply" ? lessonProblem.a * lessonProblem.b : lessonProblem.a / lessonProblem.b;
+      progress.textContent = "全部完成";
+      detail.textContent = "做到了！" + lessonProblem.a + (lessonKind === "multiply" ? " × " : " ÷ ") + lessonProblem.b + " = " + result;
+      instruction.textContent = lessonKind === "multiply" ? "盘面是你亲手累加出的乘积。" : "盘面余数为0，商已经逐位求出。";
+      status.textContent = "完成 " + lessonSteps.length + " 步";
+      check.disabled = true;
+      hint.disabled = true;
+      return;
+    }
+    const step = lessonSteps[lessonIndex];
+    progress.textContent = "第 " + (lessonIndex + 1) + " / " + lessonSteps.length + " 步";
+    detail.textContent = step.detail;
+    instruction.textContent = step.instruction;
+    if (lessonKind === "divide") {
+      const known = lessonSteps.slice(0, lessonIndex).reduce(function (sum, item) { return sum + item.quotientPart; }, 0);
+      status.textContent = "已确定的商：" + known + " · 盘面显示余数";
+    } else {
+      status.textContent = "已经完成 " + lessonIndex + " 项部分积";
+    }
+    check.disabled = false;
+    hint.disabled = false;
+  }
+
+  function startLesson() {
+    const problems = lessonProblems[lessonKind];
+    lessonProblem = problems[lessonProblemIndex[lessonKind] % problems.length];
+    lessonSteps = buildLessonSteps();
+    lessonIndex = 0;
+    lessonDone = false;
+    lessonHintLevel = 0;
+    doc.getElementById("lessonQuestion").textContent = lessonProblem.a +
+      (lessonKind === "multiply" ? " × " : " ÷ ") + lessonProblem.b + " = ?";
+    doc.getElementById("lessonGuide").textContent = lessonKind === "multiply"
+      ? "空盘起步。看一项口诀，拨入一项部分积，不用一次算出最终答案。"
+      : "从被除数起步。每次试商、减积；这个入门版把商记在旁边，算盘只显示余数。";
+    setBoardNumber(lessonKind === "multiply" ? 0 : lessonProblem.a, true);
+    showLessonStep();
+    lessonFeedback("拨完这一小步，再点「检查这一步」。");
+  }
+
+  function resetLesson() {
+    if (!lessonProblem) return;
+    lessonIndex = 0;
+    lessonDone = false;
+    lessonHintLevel = 0;
+    setBoardNumber(lessonKind === "multiply" ? 0 : lessonProblem.a, true);
+    showLessonStep();
+    lessonFeedback("已经回到第一步。重新拨就好。");
+  }
+
+  doc.querySelectorAll("[data-lesson-kind]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      lessonKind = button.dataset.lessonKind;
+      doc.querySelectorAll("[data-lesson-kind]").forEach(function (other) {
+        other.classList.toggle("is-active", other === button);
+        other.setAttribute("aria-pressed", String(other === button));
+      });
+      if (mode === "arithmetic") startLesson();
+    });
+  });
+  doc.getElementById("lessonCheckButton").addEventListener("click", function () {
+    if (lessonDone || !lessonProblem) return;
+    if (currentValue() !== lessonSteps[lessonIndex].target) {
+      lessonFeedback("还差一点。先看清本步要加或减的部分积，再检查每一档。", "try");
+      return;
+    }
+    lessonIndex += 1;
+    lessonHintLevel = 0;
+    if (lessonIndex === lessonSteps.length) lessonDone = true;
+    showLessonStep();
+    lessonFeedback(lessonDone ? "全部拨对了！这题是你自己一步步算出来的。" : "这一步正确，继续下一步。", "success");
+  });
+  doc.getElementById("lessonHintButton").addEventListener("click", function () {
+    if (lessonDone) return;
+    const step = lessonSteps[lessonIndex];
+    lessonHintLevel += 1;
+    const el = doc.getElementById("lessonHint");
+    el.hidden = false;
+    el.textContent = lessonHintLevel === 1 ? step.hint :
+      "再给一个明确提示：这一小步拨完，盘面应该是 " + step.target + "。";
+  });
+  doc.getElementById("lessonNextButton").addEventListener("click", function () {
+    lessonProblemIndex[lessonKind] = (lessonProblemIndex[lessonKind] + 1) % lessonProblems[lessonKind].length;
+    startLesson();
+  });
+
   function randInt(lo,hi) {
     return Math.floor(Math.random() * (hi-lo+1)) + lo;
   }
@@ -452,6 +614,9 @@
     state = cloneState(nextState);
     playBeadSound();
     updateBoard();
+    if (mode === "arithmetic" && !lessonDone) {
+      lessonFeedback("算盘已拨动，拨完这一步再检查。");
+    }
     if (mode === "practice") {
       feedbackEl.className = "feedback";
       feedbackEl.textContent = "算盘已拨动。继续想，拨好后再检查。";
@@ -522,8 +687,10 @@
     });
     doc.getElementById("freePanel").hidden = mode !== "free";
     doc.getElementById("practicePanel").hidden = mode !== "practice";
-    resetButton.textContent = mode === "free" ? "清盘" : "回到起点";
+    doc.getElementById("timesPanel").hidden = mode !== "arithmetic";
+    resetButton.textContent = mode === "free" ? "清盘" : (mode === "arithmetic" ? "从头拨" : "回到起点");
     if (mode === "practice") newProblem();
+    else if (mode === "arithmetic") startLesson();
     else {
       state = savedFreeState ? cloneState(savedFreeState) : emptyState();
       history = [];
@@ -602,6 +769,7 @@
     doc.querySelector(".practice-room").scrollIntoView({ behavior: "smooth", block: "start" });
   });
   resetButton.addEventListener("click", function () {
+    if (mode === "arithmetic") { resetLesson(); return; }
     const target = mode === "practice" && currentProblem ? currentProblem.a : 0;
     recordAndUpdate(fromNumber(target));
     if (mode === "practice") showFeedback("已回到起点，重新慢慢拨一次。");
