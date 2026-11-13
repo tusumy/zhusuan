@@ -7,8 +7,8 @@
   <meta name="description" content="木头珠算盘：亲手拨珠、练习进位借位，不用先心算答案。">
   <title>珠间 · 木算盘练习室</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css">
-  <script defer src="app.js?v=7bdb6986"></script>
+  <link rel="stylesheet" href="style.css?v=2">
+  <script defer src="app.js?v=muldiv1"></script>
 </head>
 <body>
   <div class="paper-grain" aria-hidden="true"></div>
@@ -35,7 +35,8 @@
         <div class="board-top">
           <div class="mode-tabs" role="group" aria-label="练习模式">
             <button type="button" class="mode-tab is-active" data-mode="free" aria-pressed="true">自由拨珠</button>
-            <button type="button" class="mode-tab" data-mode="practice" aria-pressed="false">跟我练习 <span class="tab-sparkle">✦</span></button>
+            <button type="button" class="mode-tab" data-mode="practice" aria-pressed="false">加减练习 <span class="tab-sparkle">✦</span></button>
+            <button type="button" class="mode-tab" data-mode="arithmetic" aria-pressed="false">乘除入门</button>
           </div>
           <span class="board-caption">上珠为五 · 下珠为一</span>
         </div>
@@ -98,6 +99,32 @@
           <button type="button" id="hintButton" class="action-button">给一点提示</button>
           <button type="button" id="newProblemButton" class="action-button">换一题 ↻</button>
         </div>
+      </section>
+
+      <section class="lesson-panel" id="timesPanel" aria-label="乘法和除法分步练习" hidden>
+        <div class="panel-topline"><span class="tiny-seal">新课</span><span>乘法加积 · 除法减积 · 亲手拨珠</span></div>
+        <div class="practice-heading">
+          <div><p class="mini-heading">这一题</p><h2 id="lessonQuestion">12 × 3 = ?</h2></div>
+          <div class="difficulty-switch" role="group" aria-label="选择乘法或除法">
+            <button type="button" class="is-active" data-lesson-kind="multiply" aria-pressed="true">乘法</button>
+            <button type="button" data-lesson-kind="divide" aria-pressed="false">除法</button>
+          </div>
+        </div>
+        <p class="question-guide" id="lessonGuide">空盘起步，逐项累加部分积。</p>
+        <div class="lesson-step" aria-live="polite">
+          <span class="tip-index" id="lessonProgress">第 1 步</span>
+          <h3 id="lessonStepDetail">从个位开始算。</h3>
+          <p id="lessonStepInstruction">拨好后检查本步。</p>
+          <div class="lesson-status" id="lessonStatus">等待开始</div>
+        </div>
+        <div class="hint-text" id="lessonHint" hidden></div>
+        <p class="feedback" id="lessonFeedback" aria-live="polite">按步骤拨珠，再检查。</p>
+        <div class="practice-actions">
+          <button type="button" class="primary-button" id="lessonCheckButton">检查这一步 <span>→</span></button>
+          <button type="button" class="action-button" id="lessonHintButton">给点提示</button>
+          <button type="button" class="action-button" id="lessonNextButton">换一题 ↻</button>
+        </div>
+        <p class="lesson-note">这是五档算盘的乘除原理入门：乘法用空盘加部分积，除法用盘面减部分积、在文字区记录商。正式珠算的置数定位与隔位商法，需要更宽的盘面，后续可以专门练。</p>
       </section>
 
       <footer class="footer">
